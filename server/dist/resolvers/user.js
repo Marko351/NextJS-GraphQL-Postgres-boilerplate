@@ -100,15 +100,22 @@ let UserResolver = class UserResolver {
                 };
             }
             const hashedPass = yield argon2_1.default.hash(options.password);
-            const user = em.create(User_1.User, {
-                username: options.username,
-                password: hashedPass,
-            });
+            let user;
             try {
-                yield em.persistAndFlush(user);
+                const result = yield em
+                    .createQueryBuilder(User_1.User)
+                    .getKnexQuery()
+                    .insert({
+                    username: options.username,
+                    password: hashedPass,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                })
+                    .returning('*');
+                user = result[0];
             }
             catch (err) {
-                if (err.code === '23505' || err.detail.includes('already exists')) {
+                if (err.code === '23505') {
                     return {
                         errors: [
                             {
