@@ -1,6 +1,6 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
-import { Box, Button } from '@chakra-ui/core';
+import { Box, Button, Link, Flex } from '@chakra-ui/core';
 import { useRouter } from 'next/router';
 import { withUrqlClient } from 'next-urql';
 
@@ -9,6 +9,7 @@ import { InputFiled } from '../components/InputFiled';
 import { useLoginMutation } from '../generated/graphql';
 import { toErrorMap } from '../utils/toErrorMap';
 import { createUrqlClient } from '../utils/createUrqlClient';
+import NextLink from 'next/link';
 
 interface registerProps {}
 
@@ -18,7 +19,7 @@ const Login: React.FC<registerProps> = ({}) => {
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ username: '', password: '' }}
+        initialValues={{ usernameOrEmail: '', password: '' }}
         onSubmit={async (values, { setErrors }) => {
           const response = await login(values);
           if (response.data?.login.errors) {
@@ -31,9 +32,9 @@ const Login: React.FC<registerProps> = ({}) => {
         {({ isSubmitting }) => (
           <Form>
             <InputFiled
-              name="username"
-              placeholder="username"
-              label="Username"
+              name="usernameOrEmail"
+              placeholder="usernameOrEmail"
+              label="Username or Email"
             />
             <Box mt={4}>
               <InputFiled
@@ -43,14 +44,21 @@ const Login: React.FC<registerProps> = ({}) => {
                 type="password"
               />
             </Box>
-            <Button
-              type="submit"
-              variantColor="teal"
-              mt={4}
-              isLoading={isSubmitting}
-            >
-              Login
-            </Button>
+            <Flex justify="space-between">
+              <Button
+                type="submit"
+                variantColor="teal"
+                mt={4}
+                isLoading={isSubmitting}
+              >
+                Login
+              </Button>
+              <Box mt={4}>
+                <NextLink href="/forgot-password">
+                  <Link style={{ color: 'blue' }}>Forgot password?</Link>
+                </NextLink>
+              </Box>
+            </Flex>
           </Form>
         )}
       </Formik>
