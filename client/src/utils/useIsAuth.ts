@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 export const useIsAuth = () => {
   const [{ data, fetching }] = useMeQuery();
   const router = useRouter();
-  console.log(router);
+  // console.log(router);
   useEffect(() => {
     if (!data?.me && !fetching) {
       router.replace('/login?next=' + router.pathname);

@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Box, Link, Flex, Button } from '@chakra-ui/core';
+import { Box, Link, Flex, Button, Icon, Text } from '@chakra-ui/core';
 import NextLink from 'next/link';
 
 import { useMeQuery, useLogoutMutation } from '../generated/graphql';
@@ -14,42 +14,62 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   });
   let body = null;
 
-  console.log(data);
-
   if (fetching) {
-  } else if (!data?.me) {
-    body = (
-      <Fragment>
-        <NextLink href="/login">
-          <Link color="black" mr={4}>
-            Login
+  }
+  body = (
+    <Fragment>
+      <Box>
+        <NextLink href="/">
+          <Link mr={4}>Home</Link>
+        </NextLink>
+        <NextLink href="/create-post">
+          <Link>
+            Add Post <Icon name="plus-square" size="20px" color="green.500" />
           </Link>
         </NextLink>
-        <NextLink href="/register">
-          <Link color="black">Register</Link>
-        </NextLink>
-      </Fragment>
-    );
-  } else {
-    body = (
-      <Flex>
-        <Box mr={4}>{data.me.username}</Box>
-        <Button
-          onClick={() => {
-            logout();
-          }}
-          isLoading={logoutFetching}
-          variant="link"
-        >
-          Logout
-        </Button>
-      </Flex>
-    );
-  }
+      </Box>
+      {!data?.me ? (
+        <Box>
+          <NextLink href="/login">
+            <Link color="black" mr={4}>
+              Login
+            </Link>
+          </NextLink>
+          <NextLink href="/register">
+            <Link color="black">Register</Link>
+          </NextLink>
+        </Box>
+      ) : (
+        <Box>
+          <Text mr={4} display="inline-block">
+            {data.me.username}
+          </Text>
+          <Button
+            onClick={() => {
+              logout();
+            }}
+            isLoading={logoutFetching}
+            variant="link"
+          >
+            Logout
+          </Button>
+        </Box>
+      )}
+    </Fragment>
+  );
 
   return (
-    <Flex zIndex={1} position="sticky" top={0} bg="tan" p={4}>
-      <Box ml={'auto'}>{body}</Box>
+    <Flex
+      zIndex={1}
+      position="sticky"
+      top={0}
+      bg="tan"
+      p={4}
+      justify="space-between"
+    >
+      {/* <Box ml={'auto'}>{body}</Box>
+       */}
+      {body}
     </Flex>
   );
 };

@@ -7,6 +7,7 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { createConnection } from 'typeorm';
 import cors from 'cors';
+import path from 'path';
 
 import { __prod__, COOKIE_NAME } from './constants';
 import { HelloResolver } from './resolvers/hello';
@@ -16,7 +17,7 @@ import { Post } from './entities/Post';
 import { User } from './entities/User';
 
 const main = async () => {
-  const conn = createConnection({
+  const conn = await createConnection({
     type: 'postgres',
     database: 'reddit',
     username: 'postgres',
@@ -24,8 +25,12 @@ const main = async () => {
     logging: true,
     synchronize: true,
     port: 6432,
+    migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User],
   });
+  await conn.runMigrations();
+  // const migrations = await conn.undoLastMigration();
+  // console.log('MIASJFDJASDLJASDLJ', migrations);
 
   const app = express();
 
