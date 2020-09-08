@@ -6,6 +6,8 @@ import {
   Ctx,
   ObjectType,
   Query,
+  FieldResolver,
+  Root,
 } from 'type-graphql';
 import { v4 } from 'uuid';
 import { MyContext } from '../types';
@@ -34,8 +36,17 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+  // This is used when we want to hide some field (if you are loged in user, you cannot see someone elses email, but you can see your own email)
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext) {
+    if (req.session.userId === user.id) {
+      return user.email;
+    }
+    return '';
+  }
+
   //// CHANGE PASSWORD ///////
   @Mutation(() => UserResponse)
   async changePassword(
