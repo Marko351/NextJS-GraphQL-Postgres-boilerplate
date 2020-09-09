@@ -100,6 +100,24 @@ export const createUrqlClient = (ssrExchange: any) => ({
       // This is used to update cache because URQL doesn't update cache when we register/login/... and we need to do this manually
       updates: {
         Mutation: {
+          // vote: (_result, _args, cache, _info) => {
+          //   cac
+          // },
+          createPost: (_result, _args, cache, _info) => {
+            // Lookup for all fields you send
+            const allFields = cache.inspectFields('Query');
+            // console.log('All Fields: ', allFields);
+            const fieldInfos = allFields.filter(
+              (info) => info.fieldName === 'posts'
+            );
+            fieldInfos.forEach((field) => {
+              cache.invalidate('Query', 'posts', field.arguments || {});
+            });
+            // Refetch data from the cache
+            cache.invalidate('Query', 'posts', {
+              limit: 15,
+            });
+          },
           logout: (_result, _args, cache, _info) => {
             betterUpdateQuery<LogoutMutation, MeQuery>(
               cache,

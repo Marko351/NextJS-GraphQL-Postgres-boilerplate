@@ -28,6 +28,7 @@ const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
 const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
+const Updoot_1 = require("./entities/Updoot");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: 'postgres',
@@ -38,7 +39,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         synchronize: true,
         port: 6432,
         migrations: [path_1.default.join(__dirname, './migrations/*')],
-        entities: [Post_1.Post, User_1.User],
+        entities: [Post_1.Post, User_1.User, Updoot_1.Updoot],
     });
     yield conn.runMigrations();
     const app = express_1.default();

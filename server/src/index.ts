@@ -15,6 +15,7 @@ import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
 import { Post } from './entities/Post';
 import { User } from './entities/User';
+import { Updoot } from './entities/Updoot';
 
 const main = async () => {
   const conn = await createConnection({
@@ -26,7 +27,7 @@ const main = async () => {
     synchronize: true,
     port: 6432,
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Post, User],
+    entities: [Post, User, Updoot],
   });
   await conn.runMigrations();
   // const migrations = await conn.undoLastMigration();

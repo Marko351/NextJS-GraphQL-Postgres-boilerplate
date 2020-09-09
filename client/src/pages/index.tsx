@@ -2,16 +2,10 @@ import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
-import {
-  Stack,
-  Box,
-  Heading,
-  Text,
-  Button,
-  Flex,
-  Spinner,
-} from '@chakra-ui/core';
+import { Stack, Button, Flex, Spinner } from '@chakra-ui/core';
 import { useState } from 'react';
+
+import { Post } from '../components/Post';
 
 type Variables = {
   limit: number;
@@ -20,7 +14,7 @@ type Variables = {
 
 const Index = () => {
   const [variables, setVariables] = useState<Variables>({
-    limit: 10,
+    limit: 15,
     cursor: null,
   });
   const [{ data, fetching }] = usePostsQuery({
@@ -41,15 +35,7 @@ const Index = () => {
   return (
     <Layout>
       <Flex justify="center">{loader}</Flex>
-      <Stack spacing={8}>
-        {data &&
-          data.posts.posts.map((post) => (
-            <Box key={post.id} p={5} shadow="md" borderWidth="1px">
-              <Heading fontSize="xl">{post.title}</Heading>
-              <Text mt={4}>{post.textSnippet}</Text>
-            </Box>
-          ))}
-      </Stack>
+      {data && data.posts.posts.map((post) => <Post post={post} />)}
       {data && data.posts.hasMore && (
         <Button
           onClick={onLoadMoreClick}
@@ -58,7 +44,7 @@ const Index = () => {
           size="sm"
           variant="outline"
           background="tan"
-          my={4}
+          mb={4}
         >
           Load More
         </Button>

@@ -16,6 +16,7 @@ import { Post } from '../entities/Post';
 import { MyContext } from '../types';
 import { isAuth } from '../meddleware/isAuth';
 import { getConnection } from 'typeorm';
+import { Updoot } from '../entities/Updoot';
 
 @InputType()
 class PostInput {
@@ -38,6 +39,63 @@ export class PostResolver {
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg('postId', () => Int) postId: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const { userId } = req.session;
+    const isUpdoot = value > -1;
+    const realValue = isUpdoot ? 1 : -1;
+
+    const updoot = await Updoot.findOne({ where: { postId, userId } });
+
+    //the users voted before and theyare changing their vote
+    if (updoot && updoot.value !== realValue) {
+      await getConnection().transaction(async (tr) => {
+        await tr.query(`
+        UPDATE updoot
+        SET value = ${realValue}
+        WHERE "postId" = ${postId} and "userId" = ${userId}`);
+
+        await tr.query(`
+        UPDATE post
+        SET points = points + ${realValue}
+        WHERE "id" = ${postId}`);
+      });
+    } else if (!updoot) {
+      // have never voted before
+      await getConnection().transaction(async (tr) => {
+        await tr.query(`
+          INSERT INTO updoot ("userId", "postId", value)
+          VALUES (${userId}, ${postId}, ${realValue})`);
+
+        await tr.query(`
+          UPDATE post
+          SET points = points + ${realValue} 
+          WHERE id = ${postId}
+        `);
+      });
+    }
+
+    // SQL Transaction
+    // await getConnection().query(`
+    //   START TRANSACTION;
+
+    //   INSERT INTO updoot ("userId", "postId", value)
+    //   VALUES (${userId}, ${postId}, ${realValue});
+
+    //   UPDATE post
+    //   SET points = points + ${realValue}
+    //   WHERE id = ${postId};
+
+    //   COMMIT;
+    // `);
+    return true;
   }
 
   @Query(() => PaginatedPosts)
