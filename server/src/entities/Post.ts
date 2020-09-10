@@ -1,4 +1,4 @@
-import { ObjectType, Field } from 'type-graphql';
+import { ObjectType, Field, Int } from 'type-graphql';
 import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -30,6 +30,10 @@ export class Post extends BaseEntity {
   @Field()
   @Column({ type: 'int', default: 0 })
   points!: number;
+
+  // This is only gql field
+  @Field(() => Int, { nullable: true })
+  voteStatus: number | null;
 
   @Field()
   @Column()

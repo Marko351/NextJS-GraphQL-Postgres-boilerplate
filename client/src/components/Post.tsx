@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Flex, IconButton, Box, Heading, Text } from '@chakra-ui/core';
+import NextLink from 'next/link';
+import { Flex, IconButton, Box, Heading, Text, Link } from '@chakra-ui/core';
+
 import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
 
 interface PostProps {
@@ -13,9 +15,10 @@ type ActionType = {
 
 type LoadingType = 'not-loading' | 'up-loading' | 'down-loading';
 
-export const Post: React.FC<PostProps> = ({
+export const PostComponent: React.FC<PostProps> = ({
   post: {
     id,
+    voteStatus,
     points,
     title,
     creator: { username },
@@ -58,6 +61,7 @@ export const Post: React.FC<PostProps> = ({
           variant="outline"
           variantColor="green"
           isLoading={voteLoading === 'up-loading'}
+          isDisabled={voteStatus !== 1 || voteStatus === null ? false : true}
         />
         {points}
         <IconButton
@@ -67,10 +71,16 @@ export const Post: React.FC<PostProps> = ({
           variant="outline"
           variantColor="red"
           isLoading={voteLoading === 'down-loading'}
+          isDisabled={voteStatus !== -1 || voteStatus === null ? false : true}
         />
       </Flex>
       <Box>
-        <Heading fontSize="xl">{title}</Heading>{' '}
+        <NextLink href={`/post/[id]`} as={`/post/${id}`}>
+          <Link>
+            <Heading fontSize="xl">{title}</Heading>{' '}
+          </Link>
+        </NextLink>
+
         <Text color="gray.500">posted by: {username}</Text>
         <Text mt={4}>{textSnippet}</Text>
       </Box>

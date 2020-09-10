@@ -101,14 +101,12 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg('limit', () => Int) limit: number,
-    @Arg('cursor', () => String, { nullable: true }) cursor: string | null
+    @Arg('cursor', () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPluOne = realLimit + 1;
-
-    const replacements: any[] = [realLimitPluOne];
-
-    if (cursor) replacements.push(new Date(parseInt(cursor)));
+    const { userId } = req.session;
 
     const posts = await getConnection().query(
       `
@@ -117,13 +115,17 @@ export class PostResolver {
         'id', u.id,
         'username', u.username,
         'email', u.email
-      ) creator
+      ) creator,
+      ${
+        userId
+          ? `(select value from updoot where "userId" = ${userId} and "postId" = p.id) "voteStatus"`
+          : 'null as "voteStatus"'
+      }
       from post p 
       inner join public.user u on u.id = p."creatorId"
-      ${cursor ? `where p."createdAt" < $2` : ''} 
+      ${cursor ? `where p."createdAt" < ${cursor}` : ''} 
       order by p."createdAt" DESC 
-      limit $1`,
-      replacements
+      limit ${realLimitPluOne}`
     );
     // const qb = getConnection()
     //   .getRepository(Post)
@@ -140,7 +142,6 @@ export class PostResolver {
 
     // const posts = await qb.getMany();
 
-    console.log(posts);
     return {
       posts: posts.slice(0, realLimitPluOne),
       hasMore: posts.length === realLimitPluOne,
@@ -148,8 +149,8 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg('id') id: number): Promise<Post | undefined> {
-    return Post.findOne(id);
+  post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
+    return Post.findOne(id, { relations: ['creator'] });
   }
 
   @Mutation(() => Post)

@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Box, Link, Flex, Button, Icon, Text } from '@chakra-ui/core';
+import { Box, Link, Flex, Button, Icon, Text, Heading } from '@chakra-ui/core';
 import NextLink from 'next/link';
 
 import { useMeQuery, useLogoutMutation } from '../generated/graphql';
@@ -17,10 +17,15 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   if (fetching) {
   }
   body = (
-    <Fragment>
-      <Box>
+    <Box mx="auto" w="100%" display="flex" justifyContent="space-between">
+      <Box display="flex" alignItems="center">
         <NextLink href="/">
-          <Link mr={4}>Home</Link>
+          <Link mr={4}>
+            <Heading as="h5" size="lg">
+              {' '}
+              Reddit
+            </Heading>
+          </Link>
         </NextLink>
         <NextLink href="/create-post">
           <Link>
@@ -55,7 +60,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
           </Button>
         </Box>
       )}
-    </Fragment>
+    </Box>
   );
 
   return (

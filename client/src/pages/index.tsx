@@ -2,10 +2,10 @@ import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
-import { Stack, Button, Flex, Spinner } from '@chakra-ui/core';
+import { Button, Flex, Spinner } from '@chakra-ui/core';
 import { useState } from 'react';
 
-import { Post } from '../components/Post';
+import { PostComponent } from '../components/Post';
 
 type Variables = {
   limit: number;
@@ -35,7 +35,10 @@ const Index = () => {
   return (
     <Layout>
       <Flex justify="center">{loader}</Flex>
-      {data && data.posts.posts.map((post) => <Post post={post} />)}
+      {data &&
+        data.posts.posts.map((post) => (
+          <PostComponent key={post.id} post={post} />
+        ))}
       {data && data.posts.hasMore && (
         <Button
           onClick={onLoadMoreClick}
