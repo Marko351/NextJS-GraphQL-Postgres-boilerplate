@@ -17,6 +17,7 @@ import { MyContext } from '../types';
 import { isAuth } from '../meddleware/isAuth';
 import { getConnection } from 'typeorm';
 import { Updoot } from '../entities/Updoot';
+import e from 'express';
 
 @InputType()
 class PostInput {
@@ -163,21 +164,44 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @UseMiddleware(isAuth)
   async updatePost(
-    @Arg('id') id: number,
-    @Arg('title', () => String, { nullable: true }) title: string
+    @Arg('id', () => Int) id: number,
+    @Arg('title') title: string,
+    @Arg('text') text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
-    const post = await Post.findOne(id);
-    if (!post) return null;
-    if (typeof title !== undefined) {
-      await Post.update({ id }, { title });
-    }
-    return post;
+    const { userId } = req.session;
+    const result = await getConnection()
+      .createQueryBuilder()
+      .update(Post)
+      .set({
+        title,
+        text,
+      })
+      .where('id = :id and "creatorId" = :creatorId', { id, creatorId: userId })
+      .returning('*')
+      .execute();
+
+    return result.raw[0];
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg('id') id: number): Promise<boolean> {
-    await Post.delete(id);
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg('id', () => Int) id: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    const { userId } = req.session;
+    // const post = await Post.findOne(id);
+    // if (!post) {
+    //   return false;
+    // }
+    // if (post.creatorId !== userId) {
+    //   throw new Error('not authorized');
+    // }
+    // await Updoot.delete({ postId: id });
+    await Post.delete({ id, creatorId: userId });
     return true;
   }
 }

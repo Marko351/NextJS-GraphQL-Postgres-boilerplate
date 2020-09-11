@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import NextLink from 'next/link';
 import { Flex, IconButton, Box, Heading, Text, Link } from '@chakra-ui/core';
 
-import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
+import {
+  PostSnippetFragment,
+  useVoteMutation,
+  useMeQuery,
+} from '../generated/graphql';
+import { EditDeletePostButtons } from './EditDeletePostButtons';
 
 interface PostProps {
   post: PostSnippetFragment;
@@ -15,13 +20,13 @@ type ActionType = {
 
 type LoadingType = 'not-loading' | 'up-loading' | 'down-loading';
 
-export const PostComponent: React.FC<PostProps> = ({
+export const PostCard: React.FC<PostProps> = ({
   post: {
     id,
     voteStatus,
     points,
     title,
-    creator: { username },
+    creator: { username, id: creatorId },
     textSnippet,
   },
 }) => {
@@ -47,7 +52,7 @@ export const PostComponent: React.FC<PostProps> = ({
   };
 
   return (
-    <Flex key={id} p={5} mb={8} shadow="md" borderWidth="1px">
+    <Flex shadow="md" borderWidth="1px" p={5} mb={8}>
       <Flex
         direction="column"
         alignItems="center"
@@ -84,6 +89,10 @@ export const PostComponent: React.FC<PostProps> = ({
         <Text color="gray.500">posted by: {username}</Text>
         <Text mt={4}>{textSnippet}</Text>
       </Box>
+      <Flex ml={'auto'} mt="auto" justifyContent="flex-end">
+        {' '}
+        <EditDeletePostButtons id={id} creatorId={creatorId} />{' '}
+      </Flex>
     </Flex>
   );
 };

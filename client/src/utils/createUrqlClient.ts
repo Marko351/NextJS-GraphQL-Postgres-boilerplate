@@ -15,6 +15,7 @@ import {
   LoginMutation,
   RegisterMutation,
   VoteMutationVariables,
+  DeletePostMutationVariables,
 } from '../generated/graphql';
 import router from 'next/router';
 import { isServer } from './isServer';
@@ -82,7 +83,7 @@ export const cursorPagination = (): Resolver => {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = '';
   if (isServer()) {
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
   return {
     url: 'http://localhost:4000/graphql',
@@ -104,6 +105,12 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
         // This is used to update cache because URQL doesn't update cache when we register/login/... and we need to do this manually
         updates: {
           Mutation: {
+            deletePost: (_result, args, cache, _info) => {
+              cache.invalidate({
+                __typename: 'Post',
+                id: (args as DeletePostMutationVariables).id,
+              });
+            },
             vote: (_result, args, cache, _info) => {
               const { postId, value } = args as VoteMutationVariables;
               const data = cache.readFragment(
