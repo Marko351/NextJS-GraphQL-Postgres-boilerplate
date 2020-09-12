@@ -80,6 +80,19 @@ export const cursorPagination = (): Resolver => {
   };
 };
 
+function ivalidateAllPosts(cache: Cache) {
+  const allFields = cache.inspectFields('Query');
+  // console.log('All Fields: ', allFields);
+  const fieldInfos = allFields.filter((info) => info.fieldName === 'posts');
+  fieldInfos.forEach((field) => {
+    cache.invalidate('Query', 'posts', field.arguments || {});
+  });
+  // Refetch data from the cache
+  cache.invalidate('Query', 'posts', {
+    limit: 15,
+  });
+}
+
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = '';
   if (isServer()) {
@@ -151,18 +164,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
             },
             createPost: (_result, _args, cache, _info) => {
               // Lookup for all fields you send
-              const allFields = cache.inspectFields('Query');
-              // console.log('All Fields: ', allFields);
-              const fieldInfos = allFields.filter(
-                (info) => info.fieldName === 'posts'
-              );
-              fieldInfos.forEach((field) => {
-                cache.invalidate('Query', 'posts', field.arguments || {});
-              });
-              // Refetch data from the cache
-              cache.invalidate('Query', 'posts', {
-                limit: 15,
-              });
+              ivalidateAllPosts(cache);
             },
             logout: (_result, _args, cache, _info) => {
               betterUpdateQuery<LogoutMutation, MeQuery>(
@@ -187,6 +189,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              ivalidateAllPosts(cache);
             },
             register: (_result, _args, cache, _info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(

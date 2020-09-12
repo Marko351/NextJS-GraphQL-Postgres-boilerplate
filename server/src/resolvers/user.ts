@@ -135,7 +135,6 @@ export class UserResolver {
     if (!req.session.userId) {
       return null;
     }
-
     const user = await User.findOne({ where: { id: req.session.userId } });
     return user;
   }

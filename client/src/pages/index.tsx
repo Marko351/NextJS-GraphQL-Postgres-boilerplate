@@ -17,7 +17,7 @@ const Index = () => {
     limit: 15,
     cursor: null,
   });
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, error, fetching }] = usePostsQuery({
     variables,
   });
 
@@ -29,6 +29,15 @@ const Index = () => {
       });
     }
   };
+
+  if (!fetching && !data) {
+    return (
+      <div>
+        <div>Error</div>
+        <div>{error?.message}</div>
+      </div>
+    );
+  }
 
   let loader = null;
   if (!data && fetching) loader = <Spinner size="xl" />;

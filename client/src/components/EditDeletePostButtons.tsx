@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Flex, IconButton } from '@chakra-ui/core';
+import { IconButton } from '@chakra-ui/core';
 import { useDeletePostMutation, useMeQuery } from '../generated/graphql';
 import { useRouter } from 'next/router';
 
