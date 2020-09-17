@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv-safe/config';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -22,11 +23,9 @@ import { createUpdootLoader } from './utils/createUpdootLoader';
 const main = async () => {
   const conn = await createConnection({
     type: 'postgres',
-    database: 'reddit',
-    username: 'postgres',
-    password: 'postgres',
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: true,
+    // synchronize: true,
     port: 6432,
     migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User, Updoot],
@@ -38,10 +37,11 @@ const main = async () => {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDDIS_URL);
+  app.set('proxy', 1);
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -57,7 +57,7 @@ const main = async () => {
         secure: __prod__, // cookie only works in http
       },
       saveUninitialized: false,
-      secret: 'sghfjgklagkldjfglkjdflsg',
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -81,7 +81,7 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log('server started on localhost 4000!');
   });
 };
