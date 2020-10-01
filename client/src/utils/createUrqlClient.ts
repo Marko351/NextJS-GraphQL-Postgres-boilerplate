@@ -136,31 +136,6 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 `,
                 { id: postId } as any
               );
-              if (data) {
-                if (data.voteStatus === args.value) {
-                  return;
-                }
-                console.log('object', data);
-                console.log('value', value);
-                let newPoints;
-                if (data.points === -1) {
-                  newPoints = data.points + (value < 0 ? -1 : +2);
-                } else if (data.points === 1) {
-                  newPoints = data.points + (value < 0 ? -2 : +1);
-                } else {
-                  newPoints = (data.points as number) + (value < 0 ? -1 : +1);
-                }
-                cache.writeFragment(
-                  gql`
-                    fragment _ on Post {
-                      id
-                      points
-                      voteStatus
-                    }
-                  `,
-                  { id: postId, points: newPoints, voteStatus: value } as any
-                );
-              }
             },
             createPost: (_result, _args, cache, _info) => {
               // Lookup for all fields you send

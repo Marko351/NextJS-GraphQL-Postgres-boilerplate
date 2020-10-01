@@ -1,35 +1,38 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
-import { withApollo as createWithApollo } from 'next-apollo';
+import { createWithApollo } from './createWithApollo';
 import { PaginatedPosts } from '../generated/graphql';
+import { NextPageContext } from 'next';
 
-const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
-  credentials: 'include',
-  // fetchOptions: {
-  //   credentials: 'include' as const,
-  //   // headers: cookie ? { cookie } : undefined,
-  // },
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          posts: {
-            keyArgs: [],
-            merge(
-              existing: PaginatedPosts | undefined,
-              incoming: PaginatedPosts
-            ): PaginatedPosts {
-              return {
-                __typename: 'PaginatedPosts',
-                hasMore: incoming.hasMore,
-                posts: [...(existing?.posts || []), ...incoming.posts],
-              };
+const createClient = (ctx: NextPageContext) =>
+  new ApolloClient({
+    uri: 'http://localhost:4000/graphql',
+    credentials: 'include',
+    headers: {
+      cookie:
+        (typeof window === 'undefined' ? ctx.req?.headers.cookie : undefined) ||
+        '',
+    },
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            posts: {
+              keyArgs: [],
+              merge(
+                existing: PaginatedPosts | undefined,
+                incoming: PaginatedPosts
+              ): PaginatedPosts {
+                return {
+                  __typename: 'PaginatedPosts',
+                  hasMore: incoming.hasMore,
+                  posts: [...(existing?.posts || []), ...incoming.posts],
+                };
+              },
             },
           },
         },
       },
-    },
-  }),
-});
+    }),
+  });
 
-export const withApollo = createWithApollo(client);
+export const withApollo = createWithApollo(createClient);

@@ -27,7 +27,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
           <Link mr={4}>
             <Heading as="h5" size="lg">
               {' '}
-              Reddit
+              PostIT
             </Heading>
           </Link>
         </NextLink>

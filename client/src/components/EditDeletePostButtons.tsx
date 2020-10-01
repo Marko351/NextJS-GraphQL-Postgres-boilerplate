@@ -17,7 +17,12 @@ export const EditDeletePostButtons: React.FC<EditDeletePostButtonsProps> = ({
   const router = useRouter();
 
   const onDeletePost = async (id: number) => {
-    await deletePost({ variables: { id } });
+    await deletePost({
+      variables: { id },
+      update: (cache) => {
+        cache.evict({ id: 'Post:' + id });
+      },
+    });
   };
 
   const onUpdatePostClick = (id: number) => {

@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import NextLink from 'next/link';
 import { Flex, IconButton, Box, Heading, Text, Link } from '@chakra-ui/core';
+import gql from 'graphql-tag';
+import { ApolloCache } from '@apollo/client';
 
-import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
+import {
+  PostSnippetFragment,
+  useVoteMutation,
+  VoteMutation,
+} from '../generated/graphql';
 import { EditDeletePostButtons } from './EditDeletePostButtons';
 
 interface PostProps {
@@ -15,6 +21,53 @@ type ActionType = {
 };
 
 type LoadingType = 'not-loading' | 'up-loading' | 'down-loading';
+
+const updateAfterVote = (
+  value: number,
+  postId: number,
+  cache: ApolloCache<VoteMutation>
+) => {
+  const data = cache.readFragment<{
+    id: number;
+    points: number;
+    voteStatus: number | null;
+  }>({
+    id: 'Post:' + postId,
+    fragment: gql`
+      fragment _ on Post {
+        id
+        points
+        voteStatus
+      }
+    `,
+  });
+  if (data) {
+    if (data.voteStatus === value) {
+      return;
+    }
+    console.log('object', data);
+    console.log('value', value);
+    let newPoints;
+    if (data.points === -1) {
+      newPoints = data.points + (value < 0 ? -1 : +2);
+    } else if (data.points === 1) {
+      newPoints = data.points + (value < 0 ? -2 : +1);
+    } else {
+      newPoints = (data.points as number) + (value < 0 ? -1 : +1);
+    }
+    cache.writeFragment({
+      id: 'Post:' + postId,
+      fragment: gql`
+        fragment _ on Post {
+          id
+          points
+          voteStatus
+        }
+      `,
+      data: { id: postId, points: newPoints, voteStatus: value },
+    });
+  }
+};
 
 export const PostCard: React.FC<PostProps> = ({
   post: {
@@ -37,6 +90,7 @@ export const PostCard: React.FC<PostProps> = ({
           postId: id,
           value: 1,
         },
+        update: (cache) => updateAfterVote(1, id, cache),
       });
       setVoteLoading('not-loading');
     } else {
@@ -46,6 +100,7 @@ export const PostCard: React.FC<PostProps> = ({
           postId: id,
           value: -1,
         },
+        update: (cache) => updateAfterVote(-1, id, cache),
       });
       setVoteLoading('not-loading');
     }
