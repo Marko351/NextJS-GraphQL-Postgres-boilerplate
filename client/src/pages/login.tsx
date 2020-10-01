@@ -8,6 +8,7 @@ import { InputFiled } from '../components/InputFiled';
 import { useLoginMutation } from '../generated/graphql';
 import { toErrorMap } from '../utils/toErrorMap';
 import NextLink from 'next/link';
+import { withApollo } from '../utils/withApollo';
 
 interface registerProps {}
 
@@ -64,4 +65,4 @@ const Login: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default Login;
+export default withApollo({ ssr: false })(Login);

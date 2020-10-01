@@ -3,6 +3,7 @@ import { Layout } from '../components/Layout';
 import { Button, Flex, Spinner } from '@chakra-ui/core';
 
 import { PostCard } from '../components/PostCard';
+import { withApollo } from '../utils/withApollo';
 
 type Variables = {
   limit: number;
@@ -79,4 +80,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default withApollo({ ssr: true })(Index);
