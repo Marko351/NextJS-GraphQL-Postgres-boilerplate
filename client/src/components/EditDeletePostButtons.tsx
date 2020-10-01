@@ -12,12 +12,12 @@ export const EditDeletePostButtons: React.FC<EditDeletePostButtonsProps> = ({
   id,
   creatorId,
 }) => {
-  const [{ data: meData }] = useMeQuery();
-  const [, deletePost] = useDeletePostMutation();
+  const { data: meData } = useMeQuery();
+  const [deletePost] = useDeletePostMutation();
   const router = useRouter();
 
   const onDeletePost = async (id: number) => {
-    await deletePost({ id });
+    await deletePost({ variables: { id } });
   };
 
   const onUpdatePostClick = (id: number) => {

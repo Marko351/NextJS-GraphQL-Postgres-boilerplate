@@ -1,9 +1,6 @@
-import { withUrqlClient } from 'next-urql';
-import { createUrqlClient } from '../utils/createUrqlClient';
-import { usePostsQuery } from '../generated/graphql';
+import { PostsQuery, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { Button, Flex, Spinner } from '@chakra-ui/core';
-import { useState } from 'react';
 
 import { PostCard } from '../components/PostCard';
 
@@ -13,24 +10,41 @@ type Variables = {
 };
 
 const Index = () => {
-  const [variables, setVariables] = useState<Variables>({
-    limit: 15,
-    cursor: null,
-  });
-  const [{ data, error, fetching }] = usePostsQuery({
-    variables,
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true,
   });
 
   const onLoadMoreClick = () => {
     if (data) {
-      setVariables({
-        limit: variables.limit,
-        cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+      fetchMore({
+        variables: {
+          limit: variables?.limit,
+          cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+        },
+        // updateQuery: (previousValue, { fetchMoreResult }): PostsQuery => {
+        //   if (!fetchMoreResult) return previousValue as PostsQuery;
+
+        //   return {
+        //     __typename: 'Query',
+        //     posts: {
+        //       __typename: 'PaginatedPosts',
+        //       hasMore: (fetchMoreResult as PostsQuery).posts.hasMore,
+        //       posts: [
+        //         ...(previousValue as PostsQuery).posts.posts,
+        //         ...(fetchMoreResult as PostsQuery).posts.posts,
+        //       ],
+        //     },
+        //   };
+        // },
       });
     }
   };
 
-  if (!fetching && !data) {
+  if (!loading && !data) {
     return (
       <div>
         <div>Error</div>
@@ -40,7 +54,7 @@ const Index = () => {
   }
 
   let loader = null;
-  if (!data && fetching) loader = <Spinner size="xl" />;
+  if (!data && loading) loader = <Spinner size="xl" />;
   return (
     <Layout>
       <Flex justify="center">{loader}</Flex>
@@ -51,7 +65,7 @@ const Index = () => {
       {data && data.posts.hasMore && (
         <Button
           onClick={onLoadMoreClick}
-          isLoading={fetching}
+          isLoading={loading}
           width="100%"
           size="sm"
           variant="outline"
@@ -65,4 +79,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default Index;

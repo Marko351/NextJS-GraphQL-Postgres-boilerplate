@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import NextLink from 'next/link';
 import { Flex, IconButton, Box, Heading, Text, Link } from '@chakra-ui/core';
 
-import {
-  PostSnippetFragment,
-  useVoteMutation,
-  useMeQuery,
-} from '../generated/graphql';
+import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
 import { EditDeletePostButtons } from './EditDeletePostButtons';
 
 interface PostProps {
@@ -31,21 +27,25 @@ export const PostCard: React.FC<PostProps> = ({
   },
 }) => {
   const [voteLoading, setVoteLoading] = useState<LoadingType>('not-loading');
-  const [, vote] = useVoteMutation();
+  const [vote] = useVoteMutation();
 
   const onVote = async (action: ActionType) => {
     if (action.up) {
       setVoteLoading('up-loading');
       await vote({
-        postId: id,
-        value: 1,
+        variables: {
+          postId: id,
+          value: 1,
+        },
       });
       setVoteLoading('not-loading');
     } else {
       setVoteLoading('down-loading');
       await vote({
-        postId: id,
-        value: -1,
+        variables: {
+          postId: id,
+          value: -1,
+        },
       });
       setVoteLoading('not-loading');
     }

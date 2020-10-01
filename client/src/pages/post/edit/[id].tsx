@@ -1,6 +1,4 @@
 import React from 'react';
-import { withUrqlClient } from 'next-urql';
-import { createUrqlClient } from '../../../utils/createUrqlClient';
 import { Layout } from '../../../components/Layout';
 import { Formik, Form } from 'formik';
 import { InputFiled } from '../../../components/InputFiled';
@@ -13,10 +11,10 @@ import { useRouter } from 'next/router';
 const EditPost = ({}) => {
   const router = useRouter();
   const intId = useGetIntId();
-  const [{ data, error, fetching }] = useGetPostFromUrl();
-  const [, updatePost] = useUpdatePostMutation();
+  const { data, error, loading } = useGetPostFromUrl();
+  const [updatePost] = useUpdatePostMutation();
 
-  if (fetching) {
+  if (loading) {
     return <Layout>loading....</Layout>;
   }
   if (error) {
@@ -36,9 +34,11 @@ const EditPost = ({}) => {
         initialValues={{ text: data.post.text, title: data.post.title }}
         onSubmit={async (values) => {
           await updatePost({
-            id: intId,
-            title: values.title,
-            text: values.text,
+            variables: {
+              id: intId,
+              title: values.title,
+              text: values.text,
+            },
           });
           router.back();
         }}
@@ -71,4 +71,4 @@ const EditPost = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(EditPost);
+export default EditPost;
